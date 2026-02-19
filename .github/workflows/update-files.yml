@@ -1,0 +1,35 @@
+name: (=^･ω･^=)
+
+on:
+  repository_dispatch:
+    types: [trigger-download-task]
+
+jobs:
+  download-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Remote Files
+        run: |
+          curl -L "https://github.com/myueqf/music/releases/download/latest/playList.txt" -o playList.txt
+          curl -L "https://github.com/myueqf/live2d/releases/download/latest/live2dList.txt" -o live2dList.txt
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add playList.txt live2dList.txt
+          
+          # 检查是否有文件变动
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "chore: auto update playlist and live2d files"
+            git push
+          else
+            echo "No changes detected, skipping push."
+          fi
